@@ -8,3 +8,9 @@ Pembuatan API yang dipergunakan spesifik untuk kebutuhan **NEON**<br/>
 Pengembangan API ini menggunakan bahasa pemrograman **Python** serta framework **FastAPI** yang sudah terintegrasi dengan dokumentasi **Swagger** untuk membantu user dalam integrasi dengan sistem yang lain.
 <br/>
 Deployment kedalam internal system menggunakan **Docker Engine** untuk menstandarisasikan pengelolaan asset.
+<br/>
+<br/>
+
+<ul> - Scraping website Psychologytoday.com dengan BeautifulSoup <ul/>
+<ul> - Integrasi Scraping ke dalam FastAPI <ul/>
+<ul> - Memanfaatkan postgres sebagai database menyimpan hasil scraping <ul/>
