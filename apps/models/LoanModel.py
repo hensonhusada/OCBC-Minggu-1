@@ -7,4 +7,8 @@ class Loan(Model):
 
 class PsychologyArticle(Model):
     __table__ = 'psychologyarticle'
-    
+
+class PsychologyArticleDetail(Model):
+    __table__ = 'psychologyarticle_detail'
+    __primary_key__ = 'index'
+    __timestamps__ = False

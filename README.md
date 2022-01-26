@@ -11,6 +11,8 @@ Deployment kedalam internal system menggunakan **Docker Engine** untuk menstanda
 <br/>
 <br/>
 
-<ul> - Scraping website Psychologytoday.com dengan BeautifulSoup <ul/>
-<ul> - Integrasi Scraping ke dalam FastAPI <ul/>
-<ul> - Memanfaatkan postgres sebagai database menyimpan hasil scraping <ul/>
+<ul>
+- Scraping website Psychologytoday.com dengan BeautifulSoup
+- Integrasi Scraping ke dalam FastAPI
+- Memanfaatkan postgres sebagai database menyimpan hasil scraping 
+<ul/>
