@@ -1,5 +1,6 @@
 from apps.helper import Log, ScrapingHelper
 from apps.schemas import BaseResponse, SchemaScrap, ScrapResponse
+from fastapi import BackgroundTasks
 from main import PARAMS
 from apps.models import db as conn
 from apps.helper.ConfigHelper import encoder_app
@@ -43,15 +44,17 @@ class ScrapingController(object):
     def get_article_detail(cls, url: str):
         response = ScrapResponse()
         index = hashlib.md5(url.encode()).hexdigest()
+        exist_flag = False
 
         # Check if entry is available in database, if exist return the fetched entry
         exist_in_db = ScrapingHelper.check_entry_in_db(index)
         if exist_in_db:            
+            exist_flag = True
             response.status = 200
-            response.message = "Success"                        
+            response.message = "Successfully fetched from db"                        
             # response.data = encoder_app(SchemaScrap.ResponseScrapDetail(**exist_in_db._original).json(), SALT)
             response.data = SchemaScrap.ResponseScrapDetail(**exist_in_db._original)
-            return response
+            return response, exist_flag
 
         response.status = 400
         response.message = "Error during get request"
@@ -64,9 +67,11 @@ class ScrapingController(object):
             elif data.status_code == 404:
                 response.status = 404
                 response.message = "URL not found"
-                return response
+                exist_flag = True
+                return response, exist_flag
             else:
-                return response
+                exist_flag = True
+                return response, exist_flag
 
             # Processing for date entry
             date = soup.select('p.blog-entry__date--full')[0].get_text()
@@ -91,18 +96,16 @@ class ScrapingController(object):
                 'publishdate': date,
                 'url': url,
                 'paragraph': article_text
-            }
-            # Insert entry into db
-            ScrapingHelper.input_entry_to_db(entry)
+            }            
             response.status = 200
-            response.message = "Success"
+            response.message = "Successfully scrapped, saving to db"
             # response.data = encoder_app(SchemaScrap.ResponseScrapDetail(**entry).json(), SALT)
             response.data = SchemaScrap.ResponseScrapDetail(**entry)
         except Exception as e:
             Log.error(e)            
             response.message = "Error: " + str(e)
 
-        return response
+        return response, exist_flag
 
     # Get some amount of newest article from db
     @classmethod
@@ -129,6 +132,16 @@ class ScrapingController(object):
 
         return response
         
+    # @classmethod
+    # def insert_to_db(cls, entry: ScrapResponse):
+    #     # response = ScrapResponse()              
+
+    #     try:            
+    #         # Insert entry into db
+    #         ScrapingHelper.input_entry_to_db(entry)            
+    #     except Exception as e:
+    #         Log.error(e)            
+            
 
 
     # Get one page of articles from psychologytoday.com

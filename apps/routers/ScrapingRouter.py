@@ -1,8 +1,12 @@
 from lib2to3.pytree import Base
+from turtle import back
 from urllib import response
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Query, Response, BackgroundTasks
+from apps.helper import ScrapingHelper
 from apps.controllers.ScrapingController import ScrapingController
 from apps.schemas import ScrapResponse, BaseResponse
+
+import json
 
 router = APIRouter()
 
@@ -15,8 +19,9 @@ async def get_articles_urls(response: Response, page_number: int| None = Query(1
 
 # Get article details by url
 @router.get("/get_article_detail", response_model=ScrapResponse)
-async def get_article_detail(response: Response, url: str):
-    result = ScrapingController.get_article_detail(url)
+async def get_article_detail(response: Response, url: str, background_task: BackgroundTasks):
+    result, exist_flag = ScrapingController.get_article_detail(url)
+    if not exist_flag: background_task.add_task(ScrapingHelper.input_entry_to_db, json.loads(result.data.json()))
     response.status_code = result.status
     return result
 

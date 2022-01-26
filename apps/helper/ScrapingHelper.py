@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from apps.schemas import BaseResponse
+from apps.schemas import BaseResponse, ScrapResponse
 from apps.helper import Log
 from apps.models.LoanModel import PsychologyArticleDetail as pad
 from orator.exceptions.query import QueryException
@@ -42,11 +42,21 @@ def input_entry_to_db(entry, conn=conn_string):
         db = create_engine(conn)
         db_conn = db.connect()
         entry = pd.DataFrame(entry, index=[entry['index']])
-        entry.to_sql('psychologyarticle_detail', db_conn, if_exists='append', index=False)
+        entry.to_sql('psychologyarticle_detail', db_conn, if_exists='append', index=False)        
         db_conn.close()
+        Log.info("Done inserting entry {}".format(entry.index))
     except Exception as e:
         Log.error(e)
         raise Exception(str(e))
+    
+# def insert_to_db(cls, entry: ScrapResponse):
+#     # response = ScrapResponse()              
+
+#     try:            
+#         # Insert entry into db
+#         input_entry_to_db(entry)            
+#     except Exception as e:
+#         Log.error(e)    
 
 # Get one page of records from psychologytoday.com and return
 # the articles' information
