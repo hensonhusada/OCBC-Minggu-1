@@ -48,7 +48,6 @@ async def custom_swagger_ui_html():
         swagger_css_url=f"/static/swagger-ui.css",
     )
 
-
 # app.include_router(
 #     InformationRouter.router,
 #     tags=["Information"],

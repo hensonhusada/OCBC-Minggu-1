@@ -1,14 +1,10 @@
-from apps.helper import Log
-from apps.schemas import BaseResponse, SchemaScrap
+from apps.helper import Log, ScrapingHelper
+from apps.schemas import BaseResponse, SchemaScrap, ScrapResponse
 from main import PARAMS
-from apps.helper import ScrapingHelper
-from sqlalchemy import create_engine as cce
 from apps.models import db as conn
-from apps.models.LoanModel import PsychologyArticle
-
+from apps.helper.ConfigHelper import encoder_app
 from bs4 import BeautifulSoup
-import pandas as pd
-import requests, re, hashlib
+import pandas as pd, requests, re, hashlib
 
 SALT = PARAMS.SALT.salt
 
@@ -20,19 +16,18 @@ class ScrapingController(object):
     # Get all articles urls for one page of psychologytoday.com
     @classmethod
     def get_articles_urls(cls, page_number=1):
-        response = BaseResponse()
+        response = ScrapResponse()
         base_url = "https://www.psychologytoday.com"
         url = base_url + "/intl/blog-posts?page=" + str(page_number-1)
         Log.info(url)
         list_of_urls = []
-        response.status = 404
+        response.status = 400
         response.message = "Error during get request"
         try:
             soup = ScrapingHelper.get_bs4_containers(url, cls.headers, 'html.parser', 'div', 'blog_entry__text')        
-            if not soup: return response
+            if soup is None: return response
             for can in soup:
-                list_of_urls.append(base_url + can.select('a')[1]['href'])                    
-            # response.data = list_of_urls
+                list_of_urls.append(base_url + can.select('a')[1]['href'])                                
             response.data = SchemaScrap.ResponseScrapURL(**{'url_list': list_of_urls})
             response.status = 200
             response.message = "Success"
@@ -46,43 +41,48 @@ class ScrapingController(object):
     # Fetch detail from db if exist, if not then insert to db
     @classmethod
     def get_article_detail(cls, url: str):
-        response = BaseResponse()
+        response = ScrapResponse()
         index = hashlib.md5(url.encode()).hexdigest()
 
-        # Check if entry is available in database
+        # Check if entry is available in database, if exist return the fetched entry
         exist_in_db = ScrapingHelper.check_entry_in_db(index)
         if exist_in_db:            
             response.status = 200
-            response.message = "Success"            
-            # response.data = exist_in_db._original
+            response.message = "Success"                        
+            # response.data = encoder_app(SchemaScrap.ResponseScrapDetail(**exist_in_db._original).json(), SALT)
             response.data = SchemaScrap.ResponseScrapDetail(**exist_in_db._original)
             return response
 
-        response.status = 404
+        response.status = 400
         response.message = "Error during get request"
-        # If entry doesn't exist, proceed to scraping & insert to db        
+
+        # If entry doesn't exist, proceed to scraping & insert entry to db        
         try:
             data = requests.get(url, headers=cls.headers, verify=False)
             if data.status_code == 200:
                 soup = BeautifulSoup(data.text, 'html.parser')
             elif data.status_code == 404:
+                response.status = 404
                 response.message = "URL not found"
                 return response
             else:
                 return response
+
             # Processing for date entry
             date = soup.select('p.blog-entry__date--full')[0].get_text()
             date = re.findall(
                 r'([A-Za-z]\w+ [0-9]\d{0,1}, [0-9]\d{3})',
                 date
             )[0].replace(',', '')
-            date = pd.to_datetime(date)        
+            date = pd.to_datetime(date) 
+
             # Processing for paragraph entry
             huge_text = soup.select('div.blog-entry--body-second p')
             article_text = ""
             for i in huge_text:            
                 article_text += i.text
 
+            # Process entry to dictionary
             entry = {
                 'index': index,
                 'title': soup.select('h1.blog-entry__title--full')[0].get_text(' ', strip=True),
@@ -92,10 +92,11 @@ class ScrapingController(object):
                 'url': url,
                 'paragraph': article_text
             }
-            # Insert into db
+            # Insert entry into db
             ScrapingHelper.input_entry_to_db(entry)
             response.status = 200
             response.message = "Success"
+            # response.data = encoder_app(SchemaScrap.ResponseScrapDetail(**entry).json(), SALT)
             response.data = SchemaScrap.ResponseScrapDetail(**entry)
         except Exception as e:
             Log.error(e)            
@@ -103,26 +104,27 @@ class ScrapingController(object):
 
         return response
 
+    # Get some amount of newest article from db
     @classmethod
     def get_some_articles(cls, number=5):
         results = []
-        response = BaseResponse()
+        response = ScrapResponse()
         try:
             temp = conn.table('psychologyarticle_detail').select('*').order_by('publishdate', 'desc').limit(number).get()
             for i in temp:
                 results.append({                    
                     "title": i[1],
-                    "author": i[2],
-                    "magazine": i[3],
+                    "author": i[2],                    
                     "publishdate": i[4],
                     "url": i[5]                
                 })
             response.status = 200
             response.message = "Success"
-            response.data = results
+            
+            response.data = SchemaScrap.SomeArticle(**{'article_list':results})
         except Exception as e:
             Log.error(e)
-            response.status = 404
+            response.status = 400
             response.message = "Error: " + str(e)
 
         return response
