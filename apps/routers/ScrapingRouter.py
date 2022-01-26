@@ -30,7 +30,7 @@ router = APIRouter()
 # Get article urls from psychologytoday.com
 @router.get("/get_articles_urls")
 async def get_articles_urls(response: Response, page_number: int| None = Query(None, ge=1)):
-    result = ScrapingController.get_articles_urls()
+    result = ScrapingController.get_articles_urls(page_number)
     response.status_code = result.status
     return result
 
@@ -38,5 +38,12 @@ async def get_articles_urls(response: Response, page_number: int| None = Query(N
 @router.get("/get_article_detail")
 async def get_article_detail(response: Response, url: str):
     result = ScrapingController.get_article_detail(url)
+    response.status_code = result.status
+    return result
+
+# Get newest article from database
+@router.get("/get_newest_article")
+async def get_newest_article(response: Response, amount:int = Query(1, ge=1)):
+    result = ScrapingController.get_some_articles(amount)
     response.status_code = result.status
     return result

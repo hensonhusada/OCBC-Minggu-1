@@ -14,12 +14,13 @@ import hashlib
 # Fetch website & return its text/content
 def get_web_content(url, headers):    
     cap_data = requests.get(url, headers=headers, verify=False)
-    return cap_data.text
+    return cap_data
 
 # Return resultset of desired tags & class in texts with BeautifulSoup parser
 def get_bs4_containers(url, headers, parser: str, tag:str, class_: str):
     cap_data = get_web_content(url, headers)
-    soup = BeautifulSoup(cap_data, parser)
+    if cap_data.status_code != 200: return None
+    soup = BeautifulSoup(cap_data.text, parser)
     containers = soup.find_all(tag, class_=class_)
     return containers
 
@@ -73,7 +74,7 @@ def get_bs4_containers(url, headers, parser: str, tag:str, class_: str):
 # Check entry in psychologytoday_article table by index
 def check_entry_in_db(index: str):
     try:
-        data = pad.find(index)
+        data = pad.find(index)        
     except QueryException as e:
         Log.error(e)
         return False
