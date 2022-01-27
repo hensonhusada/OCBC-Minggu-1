@@ -9,10 +9,14 @@ Pengembangan API ini menggunakan bahasa pemrograman **Python** serta framework *
 <br/>
 Deployment kedalam internal system menggunakan **Docker Engine** untuk menstandarisasikan pengelolaan asset.
 <br/>
+
+<br>
+- Scraping website Psychologytoday.com dengan BeautifulSoup<br/>
+- Integrasi Scraping ke dalam FastAPI<br/>
+- Memanfaatkan postgres sebagai database menyimpan hasil scraping <br/>
 <br/>
 
-<ul>
-- Scraping website Psychologytoday.com dengan BeautifulSoup
-- Integrasi Scraping ke dalam FastAPI
-- Memanfaatkan postgres sebagai database menyimpan hasil scraping 
-<ul/>
+API Scraping psychologytoday.com:<br/>
+- get_articles_urls: list urls artikel satu laman <br/>
+- get_article_detail: detail per artikel <br/>
+- get_newest_article: list artikel terbaru dari database <br/>

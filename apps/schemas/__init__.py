@@ -1,1 +1,1 @@
-from .Response import BaseResponse
+from .Response import BaseResponse, ScrapResponse
