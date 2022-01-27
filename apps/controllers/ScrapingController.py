@@ -1,6 +1,5 @@
 from apps.helper import Log, ScrapingHelper
-from apps.schemas import BaseResponse, SchemaScrap, ScrapResponse
-from fastapi import BackgroundTasks
+from apps.schemas import SchemaScrap, ScrapResponse
 from main import PARAMS
 from apps.models import db as conn
 from apps.helper.ConfigHelper import encoder_app
