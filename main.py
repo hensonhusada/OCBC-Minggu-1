@@ -9,7 +9,7 @@ from fastapi.openapi.docs import (
     get_swagger_ui_oauth2_redirect_html
 )
 PARAMS = Config.PARAMS
-from apps.routers import InformationRouter, LoanRouter, ScrapingRouter
+from apps.routers import ScrapingRouter
 from fastapi.staticfiles import StaticFiles
 
 
@@ -47,17 +47,6 @@ async def custom_swagger_ui_html():
         swagger_js_url=f"/static/swagger-ui-bundle.js",
         swagger_css_url=f"/static/swagger-ui.css",
     )
-
-# app.include_router(
-#     InformationRouter.router,
-#     tags=["Information"],
-# )
-
-# app.include_router(
-#     LoanRouter.router,
-#     tags=["Loan"],
-#     dependencies=[Depends(verify_token)]
-# )
 
 app.include_router(
     ScrapingRouter.router,
